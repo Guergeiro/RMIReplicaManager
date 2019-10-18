@@ -5,7 +5,8 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 
-public class ReplicaManager extends UnicastRemoteObject implements PlacesListManagerInterface {
+public class ReplicaManager extends UnicastRemoteObject
+    implements PlacesListManagerInterface, ReplicasManagementInterface {
   // Attributes
   /**
    * 
@@ -16,15 +17,12 @@ public class ReplicaManager extends UnicastRemoteObject implements PlacesListMan
   // Constructor
   public ReplicaManager() throws RemoteException {
     super(0);
-    replicas.add("rmi://localhost:2025/placelist");
-    replicas.add("rmi://localhost:2026/placelist");
-    replicas.add("rmi://localhost:2027/placelist");
   }
-  
+
   // Constructor
   public ReplicaManager(String[] arrayURL) throws RemoteException {
     super(0);
-    for(String url: arrayURL) {
+    for (String url : arrayURL) {
       replicas.add(url);
     }
   }
@@ -33,7 +31,7 @@ public class ReplicaManager extends UnicastRemoteObject implements PlacesListMan
   public void addPlace(Place p) throws RemoteException {
     for (String url : replicas) {
       invokeObjectRegistry(p);
-      addObjectReplica(p,url);
+      addObjectReplica(p, url);
     }
   }
 
@@ -54,7 +52,7 @@ public class ReplicaManager extends UnicastRemoteObject implements PlacesListMan
       e.printStackTrace();
     }
   }
-  
+
   private void addObjectReplica(Place place, String url) {
     PlacesListInterface p = null;
     try {
@@ -63,6 +61,18 @@ public class ReplicaManager extends UnicastRemoteObject implements PlacesListMan
     } catch (MalformedURLException | RemoteException | NotBoundException e) {
       e.printStackTrace();
     }
-    
+
+  }
+
+  @Override
+  public String addReplica(String replicaAddress) throws RemoteException {
+    String replica = getPlaceListAddress("");
+    replicas.add(replicaAddress);
+    return replica;
+  }
+
+  @Override
+  public void removeReplica(String replicaAddress) throws RemoteException {
+    replicas.remove(replicaAddress);
   }
 }

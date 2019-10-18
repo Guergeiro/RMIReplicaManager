@@ -5,7 +5,7 @@
               directory with the processing instruction <?eclipse.ant.import?>
               as the first entry and export the buildfile again. --><project basedir="." default="build" name="RMIReplicaManager">
     <property environment="env"/>
-    <property name="RMIClient.location" value="../RMIClient"/>
+    <property name="InitRMI.location" value="../../eclipse-workspace/InitRMI"/>
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.8"/>
     <property name="source" value="1.8"/>
@@ -35,8 +35,8 @@
         </javac>
     </target>
     <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects">
-        <ant antfile="build.xml" dir="${RMIClient.location}" inheritAll="false" target="clean"/>
-        <ant antfile="build.xml" dir="${RMIClient.location}" inheritAll="false" target="build">
+        <ant antfile="build.xml" dir="${InitRMI.location}" inheritAll="false" target="clean"/>
+        <ant antfile="build.xml" dir="${InitRMI.location}" inheritAll="false" target="build">
             <propertyset>
                 <propertyref name="build.compiler"/>
             </propertyset>
