@@ -1,0 +1,3 @@
+[submodule "RMIServer"]
+	path = RMIServer
+	url = https://github.com/Guergeiro/RMIServer.git

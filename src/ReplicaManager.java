@@ -17,18 +17,47 @@ public class ReplicaManager extends UnicastRemoteObject
   // Constructor
   public ReplicaManager() throws RemoteException {
     super(0);
-  }
 
-  // Constructor
-  public ReplicaManager(String[] arrayURL) throws RemoteException {
-    super(0);
-    for (String url : arrayURL) {
-      replicas.add(url);
-    }
+    // Pings all replicas
+    Thread t = new Thread() {
+      public void run() {
+
+        MonitoringInterface m = null;
+
+        while (true) {
+
+          for (String url : replicas) {
+            try {
+              // Testa se a replica está up
+              m = (MonitoringInterface) Naming.lookup(url);
+              m.ping();
+            } catch (MalformedURLException | RemoteException | NotBoundException e) {
+              // Relaunch replica
+              
+              String port = url.split(":")[2].split("/")[0];
+              try {
+                removeReplica(url);
+              } catch (RemoteException e1) {
+                e1.printStackTrace();
+              }
+              RMIServer.main(new String[] {port});
+            }
+          }
+
+          // Sleep da Thread a cada 1s
+          try {
+            Thread.sleep(1000);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+        }
+      }
+    };
+    t.start();
   }
 
   @Override
-  public void addPlace(Place p) throws RemoteException {
+  public synchronized void addPlace(Place p) throws RemoteException {
     for (String url : replicas) {
       invokeObjectRegistry(p);
       addObjectReplica(p, url);
@@ -36,7 +65,7 @@ public class ReplicaManager extends UnicastRemoteObject
   }
 
   @Override
-  public String getPlaceListAddress(String objectID) throws RemoteException {
+  public synchronized String getPlaceListAddress(String objectID) throws RemoteException {
     if (!replicas.isEmpty()) {
       return replicas.get((int) (Math.random() * replicas.size()));
     }
@@ -65,14 +94,14 @@ public class ReplicaManager extends UnicastRemoteObject
   }
 
   @Override
-  public String addReplica(String replicaAddress) throws RemoteException {
+  public synchronized String addReplica(String replicaAddress) throws RemoteException {
     String replica = getPlaceListAddress("");
     replicas.add(replicaAddress);
     return replica;
   }
 
   @Override
-  public void removeReplica(String replicaAddress) throws RemoteException {
+  public synchronized void removeReplica(String replicaAddress) throws RemoteException {
     replicas.remove(replicaAddress);
   }
 }

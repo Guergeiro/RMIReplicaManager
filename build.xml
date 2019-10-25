@@ -6,17 +6,21 @@
               as the first entry and export the buildfile again. --><project basedir="." default="build" name="RMIReplicaManager">
     <property environment="env"/>
     <property name="InitRMI.location" value="../../eclipse-workspace/InitRMI"/>
+    <property name="RMIServer.location" value="./RMIServer"/>
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.8"/>
     <property name="source" value="1.8"/>
+    <path id="RMIServer.classpath">
+        <pathelement location="${RMIServer.location}/bin"/>
+    </path>
     <path id="RMIReplicaManager.classpath">
         <pathelement location="bin"/>
+        <path refid="RMIServer.classpath"/>
     </path>
     <target name="init">
         <mkdir dir="bin"/>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src">
-                <exclude name="**/*.launch"/>
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
@@ -24,9 +28,17 @@
     <target name="clean">
         <delete dir="bin"/>
     </target>
-    <target depends="clean" name="cleanall"/>
+    <target depends="clean" name="cleanall">
+        <ant antfile="build.xml" dir="${RMIServer.location}" inheritAll="false" target="clean"/>
+    </target>
     <target depends="build-subprojects,build-project" name="build"/>
-    <target name="build-subprojects"/>
+    <target name="build-subprojects">
+        <ant antfile="build.xml" dir="${RMIServer.location}" inheritAll="false" target="build-project">
+            <propertyset>
+                <propertyref name="build.compiler"/>
+            </propertyset>
+        </ant>
+    </target>
     <target depends="init" name="build-project">
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
